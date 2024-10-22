@@ -1,0 +1,89 @@
+{% extends "base.html.twig" %} {% block body %}
+<div class="max-w-md mx-auto mt-10 bg-white p-5 rounded-lg shadow">
+  <h2 class="text-2xl font-bold mb-5">Ajouter un post</h2>
+
+  {{ form_start(form, {'attr': {'class': 'space-y-4', 'enctype': 'multipart/form-data'
+  }}) }}
+
+  <div>
+    {{ form_label(form.title, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'
+    }}) }}
+    {{ form_widget(form.title, {'attr': {'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+    }}) }}
+  </div>
+
+  <div>
+    {{ form_label(form.content, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'
+    }}) }}
+    {{ form_widget(form.content, {'attr': {'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+    }}) }}
+  </div>
+
+  <div>
+    {{ form_label(form.category, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'
+    }}) }}
+    {{ form_widget(form.category, {'attr': {'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+    }}) }}
+  </div>
+
+  <div>
+    {{ form_label(form.liked, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'
+    }}) }}
+    {{ form_widget(form.liked, {'attr': {'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+    }}) }}
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium text-gray-700"
+      >Téléverser une image</label
+    >
+    <div class="relative mt-1">
+      <label
+        for="{{ form.imageFile.vars.id }}"
+        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
+      >
+        Choisir un fichier
+      </label>
+      {{ form_widget(form.imageFile, {'attr': {'class': 'sr-only', 'id': form.imageFile.vars.id
+      }}) }}
+      <span id="file-chosen" class="ml-3 text-gray-500"
+        >Aucun fichier choisi</span
+      >
+    </div>
+  </div>
+
+  <div>
+    <label for="hashtags" class="block text-sm font-medium text-gray-700"
+      >Ajouter des hashtags (séparés par des espaces, commencez par #)</label
+    >
+    <input
+      type="text"
+      id="hashtags"
+      name="hashtags"
+      placeholder="#animaux #fun #drole"
+      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+    />
+  </div>
+
+  <button
+    type="submit"
+    class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+  >
+    Ajouter
+  </button>
+
+  {{ form_end(form) }}
+</div>
+
+<script>
+  document
+    .getElementById("{{ form.imageFile.vars.id }}")
+    .addEventListener("change", function () {
+      var fileName = this.files[0]
+        ? this.files[0].name
+        : "Aucun fichier choisi";
+      document.getElementById("file-chosen").textContent = fileName;
+    });
+</script>
+
+{% endblock %}

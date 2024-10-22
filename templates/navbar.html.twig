@@ -1,0 +1,100 @@
+<nav class="bg-gray-100 dark:bg-gray-900">
+    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+        <a href="#" class="flex items-center space-x-3 rtl:space-x-reverse">
+            <img src="https://cdn.discordapp.com/attachments/1168499088824733716/1287759234288582756/symfonyx_png_blanc.png?ex=6716f7fe&is=6715a67e&hm=d59c83fcfd4361f8abd818a46519f72d39edf50d8103d2083a4436699c7d81a4&" class="h-8" alt="" />
+            {# <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">SymfonyX</span> #}
+        </a>
+        <div class="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
+			
+			{% if app.user %}
+				<button id="dropdownAvatarNameButton" data-dropdown-toggle="dropdownAvatarName" class="flex items-center text-sm pe-1 font-medium text-gray-900 rounded-full hover:text-blue-600 dark:hover:text-blue-500 md:me-0 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:text-white" type="button">
+					<span class="sr-only">Open user menu</span>
+					<img class="w-8 h-8 me-2 rounded-full" src="{% if app.user.image %}{{ app.user.image }}{% else %}data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 24 24'><path fill='currentColor' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6m0 14c-2.03 0-4.43-.82-6.14-2.88a9.95 9.95 0 0 1 12.28 0C16.43 19.18 14.03 20 12 20'/></svg>{% endif %}" alt="user photo">
+					{{ app.user.pseudo }}
+					<svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+					<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+					</svg>
+				</button>
+				
+				<!-- Dropdown menu -->
+				<div id="dropdownAvatarName" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600 absolute top-full left-0">
+					<div class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+						<div class="font-medium truncate">{% if is_granted('ROLE_ADMIN') %}Administrateur{% else %}Standard User{% endif %}</div>
+						<div class="truncate">{{ app.user.email }}</div>
+					</div>
+					<ul class="py-2 text-sm text-gray-700 dark:text-gray-200 " aria-labelledby="dropdownInformdropdownAvatarNameButtonationButton">
+						<li>
+							<a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Settings</a>
+						</li>
+					</ul>
+					<div class="py-2">
+						<a href="{{ path('app_logout') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Sign out</a>
+					</div>
+				</div>
+			{% endif %}
+	
+
+		<button data-collapse-toggle="navbar-user" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600 navbar-menu-button" aria-controls="navbar-user" aria-expanded="false">
+			<span class="sr-only">Open main menu</span>
+			<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+				<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+			</svg>
+		</button>
+	</div>
+		<div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-user">
+			<ul class="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+			<li>
+				<a href="{{ url('app_post') }}" {% if (app.request.get('_route') == 'app_post') %} class="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500"  {% else %} class="block py-2 px-3 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700" {% endif %}>Home</a>
+			</li>
+			<li>
+				<a href="{{ url('app_about') }}" {% if (app.request.get('_route') == 'app_about') %} class="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500"  {% else %} class="block py-2 px-3 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700" {% endif %}>About</a>
+			</li>
+			<li>
+				<a href="{{ url('app_contact') }}" {% if (app.request.get('_route') == 'app_contact') %} class="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500"  {% else %} class="block py-2 px-3 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700" {% endif %}>Contact</a>
+			</li>
+			{% if app.user and is_granted('ROLE_ADMIN') and app.request.get('_route') != 'app_login' %}
+				
+			<li>
+				<a href="{{ url('app_category') }}" {% if (app.request.get('_route') == 'app_category') %} class="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500"  {% else %} class="block py-2 px-3 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700" {% endif %}>Category</a>
+			</li>
+			{% endif %}
+		</li>
+			
+		{% if not app.user %}
+			<li>
+				<a href="{{ url('app_login') }}" {% if (app.request.get('_route') == 'app_login') %} class="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500"  {% else %} class="block py-2 px-3 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700" {% endif %}>Login</a>
+			</li>
+		{% endif %}
+		
+	
+			</ul>
+		</div>  
+	</div>
+</nav>
+
+<script>
+
+	document.querySelector('.navbar-menu-button').addEventListener('click', function () 
+	{
+    document.getElementById('navbar-user').classList.toggle('hidden');
+	});
+
+	document.getElementById('dropdownAvatarNameButton').addEventListener('click', function() {
+
+		var dropdownMenu = document.getElementById('dropdownAvatarName');
+		
+		dropdownMenu.classList.toggle('hidden');
+		
+		dropdownMenu.style.position = 'absolute';
+		
+		dropdownMenu.style.top = '60px';
+		
+		dropdownMenu.style.left = 'auto';
+		
+		dropdownMenu.style.right = 30;
+			
+		});
+	
+
+</script>
+
