@@ -43,19 +43,24 @@ class PostController extends AbstractController
 
         // $posts = $postRepository->findAll();
         // $posts = $postRepository->findBy([], ['createdAt' => 'DESC']);
-        $queryBuilder = $postRepository->createQueryBuilder('p')
-            ->orderBy('p.createdAt', 'DESC');
 
-        // Pagination
+        // return $this->render('post/index.html.twig', [
+        //     'posts' => $posts,
+        //     'categorieColors' => $categorieColors,
+        // ]);
+
+        $query = $postRepository->createQueryBuilder('p')
+            ->orderBy('p.createdAt', 'DESC')
+            ->getQuery();
+
         $pagination = $paginator->paginate(
-            $queryBuilder, /* query NOT result */
-            $request->query->getInt('page', 1), /* numéro de page */
-            20 /* nombre de posts par page */
+            $query,
+            $request->query->getInt('page', 1), // Numéro de la page, 1 par défaut
+            10 // Nombre d'éléments par page
         );
 
         return $this->render('post/index.html.twig', [
-            // 'posts' => $posts,
-            'pagination' => $pagination,
+            'posts' => $pagination,
             'categorieColors' => $categorieColors,
         ]);
     }
@@ -65,6 +70,9 @@ class PostController extends AbstractController
     {
         $post = new Post();
         $post->setCreatedAt(new \DateTimeImmutable());
+
+        $user = $this->getUser();  // Récupère l'utilisateur connecté
+        $post->setUser($user);     // Associe l'utilisateur au post
         $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {

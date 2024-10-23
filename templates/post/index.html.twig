@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}PostController{% endblock %}
+{% block title %}Accueil{% endblock %}
 
 {% block body %}
 
@@ -20,11 +20,11 @@
 {% endfor %}
 
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-  {% for post in pagination.items %}
+  {% for post in posts %}
   <div class="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
     <a href="{{ path('app_post_show', {"id": post.id}) }}">
-      <img class="rounded-t-lg w-full" 
-    src="{% if post.image starts with 'http' %}{{ post.image }}{% else %}{{ asset('uploads/' ~ post.image) }}{% endif %}" 
+      <img class="rounded-t-lg w-full"
+    src="{% if post.image starts with 'http' %}{{ post.image }}{% else %}{{ asset('uploads/' ~ post.image) }}{% endif %}"
     alt="Image de {{ post.title }}" />
     </a>
 
@@ -66,6 +66,10 @@
     </div>
   </div>
   {% endfor %}
+</div>
+
+<div class="pagination">
+  {{ knp_pagination_render(posts) }}
 </div>
 
 {% endblock %}
