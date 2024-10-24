@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Category;
 use App\Entity\Post;
 use App\Entity\Tag;
 use App\Form\PostType;
@@ -15,8 +16,6 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-
-use function PHPUnit\Framework\matches;
 
 class PostController extends AbstractController
 {
@@ -41,22 +40,14 @@ class PostController extends AbstractController
             'Animaux' => 'bg-black',
         ];
 
-        // $posts = $postRepository->findAll();
-        // $posts = $postRepository->findBy([], ['createdAt' => 'DESC']);
-
-        // return $this->render('post/index.html.twig', [
-        //     'posts' => $posts,
-        //     'categorieColors' => $categorieColors,
-        // ]);
-
         $query = $postRepository->createQueryBuilder('p')
             ->orderBy('p.createdAt', 'DESC')
             ->getQuery();
 
         $pagination = $paginator->paginate(
             $query,
-            $request->query->getInt('page', 1), // Numéro de la page, 1 par défaut
-            10 // Nombre d'éléments par page
+            $request->query->getInt('page', 1),
+            6 // Nombre d'éléments par page
         );
 
         return $this->render('post/index.html.twig', [
@@ -94,26 +85,18 @@ class PostController extends AbstractController
             }
 
             // Gestion des tags
-            $hashtagsString = $request->request->get('hashtags');
-            if ($hashtagsString) {
-                // Utiliser une expression régulière pour trouver tous les hashtags dans la chaîne
+            $hashtagsString = $request->request->get('hashtags', ''); // Fournir une chaîne vide par défaut
+            if (!empty($hashtagsString)) {
                 preg_match_all('~#(\w+)~', $hashtagsString, $matches);
-
-                // $matches[1] contient tous les hashtags sans le symbole "#"
-                $hashtags = $matches[1];
+                $hashtags = $matches[1] ?? []; // Utiliser un tableau vide si aucun hashtag n'est trouvé
 
                 foreach ($hashtags as $hashtag) {
-                    // Chercher si le tag existe déjà
                     $tag = $em->getRepository(Tag::class)->findOneBy(['name' => $hashtag]);
-
-                    // Si le tag n'existe pas, le créer
                     if (!$tag) {
                         $tag = new Tag();
-                        $tag->setName($hashtag); // Définir le nom du tag sans le symbole "#"
+                        $tag->setName($hashtag);
                         $em->persist($tag);
                     }
-
-                    // Associer le tag au post
                     $post->addTag($tag);
                 }
             }
@@ -122,7 +105,6 @@ class PostController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Votre article' . ' ' . $post->getTitle() . ' ' . 'a bien été créé !');
-
             // $this->addFlash('info', 'Votre article' . ' ' . $post->getTitle() . ' ' . 'a bien été mis à jour !');
 
             return $this->redirectToRoute('app_post');
@@ -140,23 +122,35 @@ class PostController extends AbstractController
         ]);
     }
 
-    // #[Route('/post/category/{id}', name: 'app_post_category')]
-    // public function category(PostRepository $postRepository, $id): Response
-    // {
-    //     $posts = $postRepository->findByCategory($id);
-    //     return $this->render('post/category.html.twig', [
-    //         'posts' => $posts,
-    //     ]);
-    // }
-
-    #[Route('/post/category/{id}', name: 'app_post_category')]
-    public function category(PostRepository $postRepository, $id, Connection $connection): Response
+    #[Route('/category/{id}', name: 'app_post_category')]
+    public function postsByCategory(Category $category, PostRepository $postRepository, PaginatorInterface $paginator, Request $request): Response
     {
-        $sql = 'SELECT * FROM post WHERE category_id = :id';
-        $posts = $connection->executeQuery($sql, ['id' => $id])->fetchAllAssociative();
-        $posts = $postRepository->findByCategory($id);
-        return $this->render('post/category.html.twig', [
-            'posts' => $posts,
+        $query = $postRepository->createQueryBuilder('p')
+            ->where('p.category = :category')
+            ->setParameter('category', $category)
+            ->orderBy('p.createdAt', 'DESC')
+            ->getQuery();
+
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            6
+        );
+
+        return $this->render('post/index.html.twig', [
+            'posts' => $pagination,
+            'categorieColors' => [
+                'Politique' => 'bg-red-500',
+                'Cinéma' => 'bg-green-500',
+                'Sport' => 'bg-yellow-500',
+                'Divers' => 'bg-blue-500',
+                'Web' => 'bg-purple-500',
+                'Food' => 'bg-pink-500',
+                'Sciences' => 'bg-orange-500',
+                'Voyage' => 'bg-gray-500',
+                'Animaux' => 'bg-black',
+            ],
+            'selectedCategory' => $category
         ]);
     }
 }
