@@ -6,6 +6,8 @@ use App\Entity\Category;
 use App\Entity\Post;
 use App\Entity\Tag;
 use App\Form\PostType;
+use App\Form\SearchBarType;
+use App\Repository\CategoryRepository;
 use App\Repository\PostRepository;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
@@ -40,21 +42,42 @@ class PostController extends AbstractController
             'Animaux' => 'bg-black',
         ];
 
-        $query = $postRepository->createQueryBuilder('p')
-            ->orderBy('p.createdAt', 'DESC')
-            ->getQuery();
+        // Créez et traitez le formulaire de recherche
+        $form = $this->createForm(SearchBarType::class);
+        $form->handleRequest($request);
+
+        // Si la recherche est soumise et valide
+        if ($form->isSubmitted() && $form->isValid()) {
+            $query = $form->get('query')->getData(); // Accède aux données du champ `query`
+
+            if ($query) {
+                $postsQuery = $postRepository->searchPosts($query);
+            } else {
+                // Si aucun terme de recherche, affichez tous les posts
+                $postsQuery = $postRepository->createQueryBuilder('p')
+                    ->orderBy('p.createdAt', 'DESC')
+                    ->getQuery();
+            }
+        } else {
+            // Affichez tous les posts si aucune recherche n'a été soumise
+            $postsQuery = $postRepository->createQueryBuilder('p')
+                ->orderBy('p.createdAt', 'DESC')
+                ->getQuery();
+        }
 
         $pagination = $paginator->paginate(
-            $query,
+            $postsQuery,
             $request->query->getInt('page', 1),
-            6 // Nombre d'éléments par page
+            6
         );
 
         return $this->render('post/index.html.twig', [
-            'posts' => $pagination,
+            'pagination' => $pagination,
             'categorieColors' => $categorieColors,
+            'searchForm' => $form->createView(),
         ]);
     }
+
 
     #[Route('/post/new', name: 'app_post_new', priority: 1)]
     public function new(Request $request, EntityManagerInterface $em): Response
@@ -122,35 +145,82 @@ class PostController extends AbstractController
         ]);
     }
 
-    #[Route('/category/{id}', name: 'app_post_category')]
-    public function postsByCategory(Category $category, PostRepository $postRepository, PaginatorInterface $paginator, Request $request): Response
-    {
-        $query = $postRepository->createQueryBuilder('p')
-            ->where('p.category = :category')
-            ->setParameter('category', $category)
-            ->orderBy('p.createdAt', 'DESC')
-            ->getQuery();
+    #[Route('/posts/category/{id}', name: 'app_posts_by_category')]
+    public function postsByCategory(
+        Category $category,
+        PostRepository $postRepository,
+        PaginatorInterface $paginator,
+        Request $request
+    ): Response {
 
-        $pagination = $paginator->paginate(
-            $query,
-            $request->query->getInt('page', 1),
-            6
+        $categorieColors = [
+            'Politique' => 'bg-red-500',
+            'Cinéma' => 'bg-green-500',
+            'Sport' => 'bg-yellow-500',
+            'Divers' => 'bg-blue-500',
+            'Web' => 'bg-purple-500',
+            'Food' => 'bg-pink-500',
+            'Sciences' => 'bg-orange-500',
+            'Voyage' => 'bg-gray-500',
+            'Animaux' => 'bg-black',
+        ];
+
+        $queryBuilder = $postRepository->createQueryBuilder('p')
+            ->andWhere('p.category = :category')
+            ->setParameter('category', $category)
+            ->orderBy('p.createdAt', 'DESC');
+
+        // Ajout de la pagination
+        $posts = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1), // Récupère le numéro de page actuel
+            3 // Nombre de posts par page
         );
 
-        return $this->render('post/index.html.twig', [
-            'posts' => $pagination,
-            'categorieColors' => [
-                'Politique' => 'bg-red-500',
-                'Cinéma' => 'bg-green-500',
-                'Sport' => 'bg-yellow-500',
-                'Divers' => 'bg-blue-500',
-                'Web' => 'bg-purple-500',
-                'Food' => 'bg-pink-500',
-                'Sciences' => 'bg-orange-500',
-                'Voyage' => 'bg-gray-500',
-                'Animaux' => 'bg-black',
-            ],
-            'selectedCategory' => $category
+        return $this->render('post/category.html.twig', [
+            'category' => $category,
+            'pagination' => $posts,
+            'categorieColors' => $categorieColors,
+        ]);
+    }
+
+    #[Route('/posts/tag/{name}', name: 'app_posts_by_tag')]
+    public function postsByTag(
+        string $name,
+        PostRepository $postRepository,
+        PaginatorInterface $paginator,
+        Request $request
+    ): Response {
+
+        $categorieColors = [
+            'Politique' => 'bg-red-500',
+            'Cinéma' => 'bg-green-500',
+            'Sport' => 'bg-yellow-500',
+            'Divers' => 'bg-blue-500',
+            'Web' => 'bg-purple-500',
+            'Food' => 'bg-pink-500',
+            'Sciences' => 'bg-orange-500',
+            'Voyage' => 'bg-gray-500',
+            'Animaux' => 'bg-black',
+        ];
+
+        $queryBuilder = $postRepository->createQueryBuilder('p')
+            ->innerJoin('p.tags', 't')
+            ->andWhere('t.name = :tag')
+            ->setParameter('tag', $name)
+            ->orderBy('p.createdAt', 'DESC');
+
+        // Ajout de la pagination
+        $pagination = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            3 // Nombre de posts par page
+        );
+
+        return $this->render('post/tag.html.twig', [
+            'tag' => $name,
+            'pagination' => $pagination,
+            'categorieColors' => $categorieColors,
         ]);
     }
 }
