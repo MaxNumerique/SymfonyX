@@ -17,6 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 class PostController extends AbstractController
@@ -27,8 +28,14 @@ class PostController extends AbstractController
         $this->uploadsDir = $uploadsDir;
     }
 
-    #[Route('/', name: 'app_post')]
-    public function index(PostRepository $postRepository, PaginatorInterface $paginator, Request $request): Response
+    #[Route('/', name: 'app_index')]
+    public function indexAction(): Response
+    {
+        return $this->render('post/index.html.twig');
+    }
+
+    #[Route('/posts/{query}', name: 'app_post', defaults: ['query' => null])]
+    public function index(PostRepository $postRepository, PaginatorInterface $paginator, Request $request, ?string $query): Response
     {
         $categorieColors = [
             'Politique' => 'bg-red-500',
@@ -42,31 +49,18 @@ class PostController extends AbstractController
             'Animaux' => 'bg-black',
         ];
 
-        // Créez et traitez le formulaire de recherche
         $form = $this->createForm(SearchBarType::class);
         $form->handleRequest($request);
 
-        // Si la recherche est soumise et valide
         if ($form->isSubmitted() && $form->isValid()) {
-            $query = $form->get('query')->getData(); // Accède aux données du champ `query`
-
-            if ($query) {
-                $postsQuery = $postRepository->searchPosts($query);
-            } else {
-                // Si aucun terme de recherche, affichez tous les posts
-                $postsQuery = $postRepository->createQueryBuilder('p')
-                    ->orderBy('p.createdAt', 'DESC')
-                    ->getQuery();
-            }
-        } else {
-            // Affichez tous les posts si aucune recherche n'a été soumise
-            $postsQuery = $postRepository->createQueryBuilder('p')
-                ->orderBy('p.createdAt', 'DESC')
-                ->getQuery();
+            $query = $form->get('query')->getData();
+            return $this->redirectToRoute('app_post', ['query' => $query]);
         }
 
+        $posts = $query ? $postRepository->searchPosts($query) : $postRepository->findBy([], ['createdAt' => 'desc']);
+
         $pagination = $paginator->paginate(
-            $postsQuery,
+            $posts,
             $request->query->getInt('page', 1),
             6
         );
@@ -75,8 +69,55 @@ class PostController extends AbstractController
             'pagination' => $pagination,
             'categorieColors' => $categorieColors,
             'searchForm' => $form->createView(),
+            'query' => $query
         ]);
     }
+
+    // #[Route('/posts/{query}', name: 'app_post', defaults: ['query' => null])]
+    // public function index(
+    //     PostRepository $postRepository,
+    //     CategoryRepository $categoryRepositoryn,
+    //     SessionInterface $session,
+    //     PaginatorInterface $paginator,
+    //     Request $request,
+    //     ?string $query
+
+    // ): Response {
+
+
+    //     $categories = $categoryRepositoryn->findAll();
+    //     $session->set('categories', $categories);
+
+    //     $form  = $this->createForm(SearchBarType::class);
+    //     $form->handleRequest($request);
+    //     if ($form->isSubmitted() && $form->isValid()) {
+    //         $query = $form->get('query')->getData();
+    //         dump($query);
+    //     }
+
+    //     if ($query) {
+    //         $posts = $postRepository->searchPosts($query);
+    //     } else {
+    //         $posts = $postRepository->findBy([], ['createdAt' => 'desc']);
+    //         dump($posts);
+    //     }
+
+    //     // Paginer les résultats
+    //     $pagination = $paginator->paginate(
+    //         $posts, /* tableau des résultats */
+    //         $request->query->getInt('page', 1), /* Numéro de page */
+    //         9 /* Limite d'éléments par page */
+    //     );
+
+    //     return $this->render('post/index.html.twig', [
+    //         'pagination' => $posts,
+    //         'form' => $form->createView(),
+    //         'query' => $query
+    //     ]);
+    // }
+
+
+
 
 
     #[Route('/post/new', name: 'app_post_new', priority: 1)]
